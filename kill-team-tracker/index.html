@@ -307,6 +307,11 @@ $(function() {
 		$('#p2-vp').html(function(i, val) { return val*1-1 });
 	});
 	
+	// prompt user to verify page reload so we don't lose points tracking
+	window.onbeforeunload = function() {
+		return "Are you sure you want to reload the page? Current point tracking will be lost.";
+	}
+	
 });
 </script>
 </body>
