@@ -125,9 +125,9 @@ $(function() {
     $(this).siblings('[data-value]').text(currentValue);
   });
   
-  // prompt user to verify page reload so we don't lose points tracking
+  // verify page reload to prevent accidental points reset
   window.onbeforeunload = function() {
-    return "Are you sure you want to reload the page? Current point tracking will be lost.";
+    return "Are you sure you want to leave the page and reset all points?";
   }
 
 });
