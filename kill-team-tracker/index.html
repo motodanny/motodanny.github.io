@@ -45,6 +45,9 @@ button {
 .player1, .player2 {
 	width: 50%;
 }
+.kill-team-name {
+	color: #ff4f02;
+}
 .incrementer {
 	display: flex;
 	align-items: center;
@@ -79,7 +82,7 @@ button {
 	<div class="players">
 
 		<div class="player1">
-			<span style="color:#ff4f02;">Kill Team 1</span><br>
+			<span class="kill-team-name">Kill Team 1</span><br>
 			Command Points<br>
 			<div class="incrementer">
 				<button class="down">-</button><span data-value="2">2</span><button class="up">+</button>
@@ -91,7 +94,7 @@ button {
 		</div>
 
 		<div class="player2">
-			<span style="color:#ff4f02;">Kill Team 2</span><br>
+			<span class="kill-team-name">Kill Team 2</span><br>
 			Command Points<br>
 			<div class="incrementer">
 				<button class="down">-</button><span data-value="2">2</span><button class="up">+</button>
@@ -112,7 +115,7 @@ button {
 <script>
 $(function() {
 
-  // thanks for the clean JS hurst! the emperor protects!
+  // thanks for the JS hurst! for the emperor!
   $('.incrementer button').click(function(){
     var upOrDown = $(this).attr('class');
     var currentValue = $(this).siblings('[data-value]').attr('data-value');
@@ -123,6 +126,14 @@ $(function() {
     }
     $(this).siblings('[data-value]').attr('data-value',currentValue);
     $(this).siblings('[data-value]').text(currentValue);
+  });
+  
+  $('.kill-team-name').click(function(){
+    var thisDiv = $(this);
+    var ktName = prompt("Enter your Kill Team name:", "Kill Team ");
+    if (ktName != null) {
+      thisDiv.text(ktName);
+    }
   });
   
   // verify page reload to prevent accidental points reset
