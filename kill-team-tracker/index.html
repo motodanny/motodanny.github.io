@@ -67,9 +67,24 @@ button {
 .incrementer span.tp {
   font-size: 66px;
 }
+footer {
+  padding: 0 40px;
+  font-size: 26px;
+  text-align: center;
+}
+footer a {
+  display: inline-block;
+  margin: 0 30px;
+  color: #000;
+  text-decoration: none;
+  transition: all .2s ease-out;
+}
+footer a:hover {
+  color: #ff4f02;
+}
 .disclaimer {
-  max-width: 100%;
-  padding: 20px;
+  width: 100%;
+  padding: 20px 0 40px;
   font-size: 12px;
 }
 @media screen and (max-width: 768px) {
@@ -80,6 +95,9 @@ button {
     width: 100%;
     padding-top: 40px;
     border-top: 5px solid #ccc;
+  }
+  footer a {
+    display: block;
   }
 }
 </style>
@@ -96,28 +114,30 @@ button {
 
   <div class="players">
 
+    <!-- 1 -->
     <div class="player1">
       <span class="kill-team-name">Kill Team 1</span><br>
-      
+
       Command Points<br>
       <div class="incrementer">
         <button class="down">-</button><span data-value="2">2</span><button class="up">+</button>
       </div>
-      
+
       Victory Points<br>
       <div class="incrementer">
         <button class="down">-</button><span data-value="0">0</span><button class="up">+</button>
       </div>
     </div>
 
+    <!-- 2 -->
     <div class="player2">
       <span class="kill-team-name">Kill Team 2</span><br>
-      
+
       Command Points<br>
       <div class="incrementer">
         <button class="down">-</button><span data-value="2">2</span><button class="up">+</button>
       </div>
-      
+
       Victory Points<br>
       <div class="incrementer">
         <button class="down">-</button><span data-value="0">0</span><button class="up">+</button>
@@ -126,9 +146,17 @@ button {
 
   </div>
 
+</main>
+
+<footer>
+
+  <a href="https://www.warhammer-community.com/faqs/#kill-team" target="_blank">Kill Team FAQs</a>
+  &#9760;
+  <a href="https://www.warhammer-community.com/downloads/#kill-team" target="_blank">Kill Team Downloads</a>
+
   <div class="disclaimer">This web page is completely unofficial and in no way endorsed by Games Workshop Limited.</div>
 
-</main>
+</footer>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script>
@@ -146,7 +174,7 @@ $(function() {
     $(this).siblings('[data-value]').attr('data-value',currentValue);
     $(this).siblings('[data-value]').text(currentValue);
   });
-  
+
   $('.kill-team-name').click(function(){
     var thisDiv = $(this);
     var ktName = prompt("Enter your Kill Team name:", "Kill Team ");
@@ -154,7 +182,7 @@ $(function() {
       thisDiv.text(ktName);
     }
   });
-  
+
   // verify page reload to prevent accidental points reset
   window.onbeforeunload = function() {
     return "Are you sure you want to leave the page and reset all points?";
