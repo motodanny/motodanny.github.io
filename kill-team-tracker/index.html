@@ -73,8 +73,6 @@ footer {
   text-align: center;
 }
 footer a {
-  display: inline-block;
-  margin: 0 30px;
   color: #000;
   text-decoration: none;
   transition: all .2s ease-out;
@@ -86,6 +84,24 @@ footer a:hover {
   width: 100%;
   padding: 20px 0 40px;
   font-size: 12px;
+}
+.arrow {
+  display: inline-block;
+  margin-top: 5px;
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  vertical-align: middle;
+}
+.skull {
+  cursor: pointer;
+  vertical-align: middle;
+}
+.faqs-link,
+.downloads-link {
+  margin: 0 30px;
+  white-space: nowrap;
+  vertical-align: middle;
+  display: none;
 }
 @media screen and (max-width: 768px) {
   .players {
@@ -150,9 +166,9 @@ footer a:hover {
 
 <footer>
 
-  <a href="https://www.warhammer-community.com/faqs/#kill-team" target="_blank">Kill Team FAQs</a>
-  &#9760;
-  <a href="https://www.warhammer-community.com/downloads/#kill-team" target="_blank">Kill Team Downloads</a>
+  <span class="arrow">&gt;</span><a href="https://www.warhammer-community.com/faqs/#kill-team" target="_blank" class="faqs-link">Kill Team FAQs</a>
+  <a class="skull">&#9760;</a>
+  <a href="https://www.warhammer-community.com/downloads/#kill-team" target="_blank" class="downloads-link">Kill Team Downloads</a><span class="arrow">&lt;</span>
 
   <div class="disclaimer">This web page is completely unofficial and in no way endorsed by Games Workshop Limited.</div>
 
@@ -184,9 +200,14 @@ $(function() {
   });
 
   // verify page reload to prevent accidental points reset
-  window.onbeforeunload = function() {
+  window.onbeforeunload = function(){
     return "Are you sure you want to leave the page and reset all points?";
   }
+
+  // links toggle
+  $('.skull').click(function(){
+    $('.faqs-link,.downloads-link').animate({width: 'toggle'});
+  });
 
 });
 </script>
