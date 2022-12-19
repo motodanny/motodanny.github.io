@@ -84,24 +84,7 @@ footer a:hover {
   width: 100%;
   padding: 20px 0 40px;
   font-size: 12px;
-}
-.arrow {
-  display: inline-block;
-  margin-top: 5px;
-  font-family: Arial, sans-serif;
-  font-size: 18px;
-  vertical-align: middle;
-}
-.skull {
-  cursor: pointer;
-  vertical-align: middle;
-}
-.faqs-link,
-.downloads-link {
-  margin: 0 30px;
-  white-space: nowrap;
-  vertical-align: middle;
-  display: none;
+  line-height: 24px;
 }
 @media screen and (max-width: 768px) {
   .players {
@@ -130,7 +113,7 @@ footer a:hover {
 
   <div class="players">
 
-    <!-- 1 -->
+    <!-- player 1 -->
     <div class="player1">
       <span class="kill-team-name">Kill Team 1</span><br>
 
@@ -145,7 +128,7 @@ footer a:hover {
       </div>
     </div>
 
-    <!-- 2 -->
+    <!-- player 2 -->
     <div class="player2">
       <span class="kill-team-name">Kill Team 2</span><br>
 
@@ -166,11 +149,11 @@ footer a:hover {
 
 <footer>
 
-  <span class="arrow">&gt;</span><a href="https://www.warhammer-community.com/faqs/#kill-team" target="_blank" class="faqs-link">Kill Team FAQs</a>
-  <a class="skull">&#9760;</a>
-  <a href="https://www.warhammer-community.com/downloads/#kill-team" target="_blank" class="downloads-link">Kill Team Downloads</a><span class="arrow">&lt;</span>
-
-  <div class="disclaimer">This web page is completely unofficial and in no way endorsed by Games Workshop Limited.</div>
+  <div class="disclaimer">This web page is completely unofficial and in no way endorsed by Games Workshop Limited.<br>
+  	<a href="https://www.warhammer-community.com/faqs/#kill-team" target="_blank">Kill Team FAQs</a>
+  	&nbsp;&nbsp;&nbsp;&#9760;&nbsp;&nbsp;&nbsp;
+  	<a href="https://www.warhammer-community.com/downloads/#kill-team" target="_blank">Kill Team Downloads</a>
+  </div>
 
 </footer>
 
@@ -203,11 +186,6 @@ $(function() {
   window.onbeforeunload = function(){
     return "Are you sure you want to leave the page and reset all points?";
   }
-
-  // links toggle
-  $('.skull').click(function(){
-    $('.faqs-link,.downloads-link').animate({width: 'toggle'});
-  });
 
 });
 </script>
