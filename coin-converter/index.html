@@ -12,31 +12,32 @@
 
 <style>
 body {
-	background: #ccc;
-	font-family: 'IM Fell DW Pica SC', serif;
-	font-size: 40px;
+  background: #ccc;
+  font-family: 'IM Fell DW Pica SC', serif;
+  font-size: 40px;
 }
 .wrapper {
-	display: flex;
-	flex-wrap: wrap;
-	max-width: 450px;
-	margin: 0 auto;
-	padding: 50px;
-	background: #fff;
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 450px;
+  margin: 0 auto;
+  padding: 50px;
+  background: #fff;
+  border-radius: 10px;
 }
 .wrapper .coin-wrap {
-	padding-bottom: 20px;
+  padding-bottom: 20px;
 }
 input[type=number],
 input[type=button] {
-	width: 150px;
-	margin-left: 25px;
-	font-size: 40px;
-	border: unset;
-	border-bottom: 1px dashed #ccc;
-	font-family: 'IM Fell DW Pica SC', serif;
-	text-align: center;
-	outline: unset;
+  width: 150px;
+  margin-left: 25px;
+  font-size: 40px;
+  border: unset;
+  border-bottom: 1px dashed #666;
+  font-family: 'IM Fell DW Pica SC', serif;
+  text-align: center;
+  outline: unset;
 }
 /* hide number input arrows */
 input::-webkit-outer-spin-button,
@@ -48,135 +49,135 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 input[type=button] {
-	width: auto;
-	margin: 0;
-	padding: 5px 20px;
-	font-size: 35px;
+  width: auto;
+  margin: 0;
+  padding: 5px 20px;
+  font-size: 35px;
+  border: unset;
+  border-radius: 5px;
 }
 .party {
-	width: 100%;
-	padding: 50px 0;
-	font-size: 30px;
-	text-align: center;
+  width: 100%;
+  padding: 50px 0;
+  font-size: 30px;
+  text-align: center;
 }
 .party input[type=number] {
-	margin: 0;
+  margin: 0;
 }
 </style>
 </head>
 <body>
 <div class="wrapper">
-	<div>
-		<div class="coin-wrap">
-			Platinum (pp) <input id="inputPlatinum" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
-		</div>
-		<div class="coin-wrap">
-			Gold (gp) <input id="inputGold" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
-		</div>
-		<div class="coin-wrap">
-			Electrum (ep) <input id="inputElectrum" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
-		</div>
-		<div class="coin-wrap">
-			Silver (sp) <input id="inputSilver" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
-		</div>
-		<div class="coin-wrap">
-			Copper (cp) <input id="inputCopper" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
-		</div>
-	</div>
-	<div class="party">
-		Number of Party Members
-		<form>
-			<input id="inputParty" type="number"><br><br>
-			<input type="button" onClick="divideBy()" value="divvy up the loot" />
-		</form>
-	</div>
-	<div>
-		<div class="coin-wrap">
-			Platinum (pp) <input id="dividedPlatinum" type="number" readonly>
-		</div>
-		<div class="coin-wrap">
-			Gold (gp) <input id="dividedGold" type="number" readonly>
-		</div>
-		<div class="coin-wrap">
-			Electrum (ep) <input id="dividedElectrum" type="number" readonly>
-		</div>
-		<div class="coin-wrap">
-			Silver (sp) <input id="dividedSilver" type="number" readonly>
-		</div>
-		<div class="coin-wrap">
-			Copper (cp) <input id="dividedCopper" type="number" readonly>
-		</div>
-	</div>
+  
+  <div>
+    <div class="coin-wrap">
+      Platinum (pp) <input id="inputPlatinum" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
+    </div>
+    <div class="coin-wrap">
+      Gold (gp) <input id="inputGold" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
+    </div>
+    <div class="coin-wrap">
+      Electrum (ep) <input id="inputElectrum" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
+    </div>
+    <div class="coin-wrap">
+      Silver (sp) <input id="inputSilver" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
+    </div>
+    <div class="coin-wrap">
+      Copper (cp) <input id="inputCopper" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
+    </div>
+  </div>
+  
+  <div class="party">
+    Number of Party Members
+    <form>
+      <input id="inputParty" type="number"><br><br>
+      <input type="button" onClick="divideBy()" value="divvy up the loot" />
+    </form>
+  </div>
+  
+  <div>
+    <div class="coin-wrap">
+      Platinum (pp) <input id="dividedPlatinum" type="number" readonly>
+    </div>
+    <div class="coin-wrap">
+      Gold (gp) <input id="dividedGold" type="number" readonly>
+    </div>
+    <div class="coin-wrap">
+      Electrum (ep) <input id="dividedElectrum" type="number" readonly>
+    </div>
+    <div class="coin-wrap">
+      Silver (sp) <input id="dividedSilver" type="number" readonly>
+    </div>
+    <div class="coin-wrap">
+      Copper (cp) <input id="dividedCopper" type="number" readonly>
+    </div>
+  </div>
+  
 </div>
 
 <script>
 function coinConverter(source,valNum) {
-  valNum = parseFloat(valNum);
-
-  var inputPlatinum =  document.getElementById("inputPlatinum");
-  var inputGold =  document.getElementById("inputGold");
-  var inputElectrum =  document.getElementById("inputElectrum");
-  var inputSilver =  document.getElementById("inputSilver");
-  var inputCopper =  document.getElementById("inputCopper");
-
+  
+  var valNum = parseFloat(valNum);
+  var inputPlatinum = document.getElementById("inputPlatinum");
+  var inputGold = document.getElementById("inputGold");
+  var inputElectrum = document.getElementById("inputElectrum");
+  var inputSilver = document.getElementById("inputSilver");
+  var inputCopper = document.getElementById("inputCopper");
+  
   if (source=="inputPlatinum") {
-    inputGold.value=(valNum*10);
-    inputElectrum.value=(valNum*20);
-    inputSilver.value=(valNum*100);
-    inputCopper.value=(valNum*1000);
+    inputGold.value=(valNum*5);
+    inputElectrum.value=(valNum*10);
+    inputSilver.value=(valNum*50);
+    inputCopper.value=(valNum*500);
   }
 
   if (source=="inputGold") {
-    inputPlatinum.value=(valNum/10);
+    inputPlatinum.value=(valNum/5);
     inputElectrum.value=(valNum*2);
     inputSilver.value=(valNum*10);
     inputCopper.value=(valNum*100);
   }
 
   if (source=="inputElectrum") {
-    inputPlatinum.value=(valNum/20);
+    inputPlatinum.value=(valNum/10);
     inputGold.value=(valNum/2);
     inputSilver.value=(valNum*5);
     inputCopper.value=(valNum*50);
   }
 
   if (source=="inputSilver") {
-    inputPlatinum.value=(valNum/100);
+    inputPlatinum.value=(valNum/50);
     inputGold.value=(valNum/10);
     inputElectrum.value=(valNum/5);
     inputCopper.value=(valNum*10);
   }
 
   if (source=="inputCopper") {
-    inputPlatinum.value=(valNum/1000);
+    inputPlatinum.value=(valNum/500);
     inputGold.value=(valNum/100);
     inputElectrum.value=(valNum/50);
     inputSilver.value=(valNum/10);
   }
+  
 }
 
 function divideBy() {
 
-	platinum = document.getElementById("inputPlatinum").value;
-	party = document.getElementById("inputParty").value;
-	document.getElementById("dividedPlatinum").value = platinum / party;
-
-	gold = document.getElementById("inputGold").value;
-	party = document.getElementById("inputParty").value;
-	document.getElementById("dividedGold").value = gold / party;
-
-	electrum = document.getElementById("inputElectrum").value;
-	party = document.getElementById("inputParty").value;
-	document.getElementById("dividedElectrum").value = electrum / party;
-
-	silver = document.getElementById("inputSilver").value;
-	party = document.getElementById("inputParty").value;
-	document.getElementById("dividedSilver").value = silver / party;
-
-	copper = document.getElementById("inputCopper").value;
-	party = document.getElementById("inputParty").value;
-	document.getElementById("dividedCopper").value = copper / party;
-
+  var platinum = document.getElementById("inputPlatinum").value;
+  var gold = document.getElementById("inputGold").value;
+  var electrum = document.getElementById("inputElectrum").value;
+  var silver = document.getElementById("inputSilver").value;
+  var copper = document.getElementById("inputCopper").value;
+  var party = document.getElementById("inputParty").value;
+  
+  document.getElementById("dividedPlatinum").value = platinum/party;
+  document.getElementById("dividedGold").value = gold/party;
+  document.getElementById("dividedElectrum").value = electrum/party;
+  document.getElementById("dividedSilver").value = silver/party;
+  document.getElementById("dividedCopper").value = copper/party;
+  
 }
 </script>
 </body>
