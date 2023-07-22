@@ -20,15 +20,11 @@ body {
 .wrapper {
   display: flex;
   flex-wrap: wrap;
-  max-width: 520px;
+  max-width: 450px;
   margin: 0 auto;
   padding: 50px;
   background: #fff;
   border-radius: 10px;
-}
-.coin {
-  max-width: 440px;
-  margin: 0 auto;
 }
 .coin-wrap {
   width: 100%;
@@ -76,9 +72,6 @@ input[type=button]:focus-visible {
 .party input[type=number] {
   margin: 0;
 }
-.divider input[type=number] {
-  width: 120px;
-}
 input[type=number].remainder {
   width: 50px;
   margin: 0;
@@ -88,7 +81,7 @@ input[type=number].remainder {
 <body>
 <div class="wrapper">
 
-  <div class="coin">
+  <div>
     <div class="coin-wrap">
       Platinum (pp) <input id="inputPlatinum" type="number" oninput="coinConverter(this.id,this.value)" onchange="coinConverter(this.id,this.value)">
     </div>
@@ -116,19 +109,19 @@ input[type=number].remainder {
 
   <div class="divider">
     <div class="coin-wrap">
-      Platinum (pp) <input id="dividedPlatinum" type="number" readonly>(<input id="dividedPlatinumRemainder" class="remainder" type="number" readonly>)
+      Platinum <input id="dividedPlatinum" type="number" readonly>(<input id="dividedPlatinumRemainder" class="remainder" type="number" readonly>)
     </div>
     <div class="coin-wrap">
-      Gold (gp) <input id="dividedGold" type="number" readonly>(<input id="dividedGoldRemainder" class="remainder" type="number" readonly>)
+      Gold <input id="dividedGold" type="number" readonly>(<input id="dividedGoldRemainder" class="remainder" type="number" readonly>)
     </div>
     <div class="coin-wrap">
-      Electrum (ep) <input id="dividedElectrum" type="number" readonly>(<input id="dividedElectrumRemainder" class="remainder" type="number" readonly>)
+      Electrum <input id="dividedElectrum" type="number" readonly>(<input id="dividedElectrumRemainder" class="remainder" type="number" readonly>)
     </div>
     <div class="coin-wrap">
-      Silver (sp) <input id="dividedSilver" type="number" readonly>(<input id="dividedSilverRemainder" class="remainder" type="number" readonly>)
+      Silver <input id="dividedSilver" type="number" readonly>(<input id="dividedSilverRemainder" class="remainder" type="number" readonly>)
     </div>
     <div class="coin-wrap">
-      Copper (cp) <input id="dividedCopper" type="number" readonly>(<input id="dividedCopperRemainder" class="remainder" type="number" readonly>)
+      Copper <input id="dividedCopper" type="number" readonly>(<input id="dividedCopperRemainder" class="remainder" type="number" readonly>)
     </div>
   </div>
 
