@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eye Spy</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f4f5f7;
+      --card: #ffffff;
+      --border: #e2e4e9;
+      --text: #1a1c21;
+      --muted: #6b7280;
+      --accent: #d6336c;
+      --accent-soft: #fde7ef;
+      --on: #1f8a4c;
+      --on-soft: #e3f5ea;
+      --off: #9ca3af;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0e0f12;
+        --card: #17191e;
+        --border: #2a2d35;
+        --text: #eceef2;
+        --muted: #8b919c;
+        --accent: #ff5c8a;
+        --accent-soft: #3a1622;
+        --on: #4ade80;
+        --on-soft: #13301f;
+        --off: #5b616c;
+      }
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding: 32px 16px 64px;
+    }
+
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 40px);
+      letter-spacing: -0.02em;
+    }
+
+    h1 span { color: var(--accent); }
+
+    .lede {
+      color: var(--muted);
+      max-width: 62ch;
+      margin-top: 4px;
+    }
+
+    .actions { display: flex; gap: 8px; }
+
+    button {
+      font: inherit;
+      font-size: 14px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    button:hover { border-color: var(--accent); }
+
+    .hero {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-width: 0;
+    }
+
+    .stat .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .stat .value {
+      font-family: var(--mono);
+      font-size: 17px;
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+    }
+
+    .stat.key { border-color: var(--accent); background: var(--accent-soft); }
+
+    .notice {
+      font-size: 13px;
+      color: var(--muted);
+      border-left: 3px solid var(--accent);
+      padding: 4px 0 4px 12px;
+      margin-bottom: 24px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr));
+      gap: 16px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      min-width: 0;
+    }
+
+    .card h2 {
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .card .desc {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    dl {
+      display: grid;
+      grid-template-columns: minmax(110px, 38%) 1fr;
+      font-size: 13px;
+    }
+
+    dt, dd {
+      padding: 6px 0;
+      border-top: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    dt { color: var(--muted); padding-right: 12px; }
+
+    dd {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      overflow-wrap: anywhere;
+    }
+
+    dd.na { color: var(--off); }
+    dd.pending { color: var(--muted); animation: pulse 1.2s infinite; }
+
+    @keyframes pulse { 50% { opacity: 0.4; } }
+
+    dd.full, dt.full { grid-column: 1 / -1; }
+    dt.full { padding-bottom: 0; }
+    dd.full { border-top: none; }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .chip {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--off);
+      text-decoration: line-through;
+    }
+
+    .chip.on {
+      color: var(--on);
+      background: var(--on-soft);
+      border-color: transparent;
+      text-decoration: none;
+    }
+
+    dd img {
+      max-width: 100%;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: block;
+    }
+
+    .ad-bait {
+      position: absolute;
+      left: -9999px;
+      height: 10px;
+      width: 10px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      dd.pending { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Eye <span>Spy</span></h1>
+        <p class="lede">Everything your browser hands over to any website, no permission prompts needed. Each value below came from a script on this page.</p>
+      </div>
+      <div class="actions">
+        <button id="copy">Copy JSON</button>
+        <button id="download">Download</button>
+      </div>
+    </header>
+
+    <div class="hero" id="hero"></div>
+
+    <p class="notice">This page stores nothing and has no backend. Two lookups go out: your IP is sent to <strong>ipapi.co</strong> for geolocation, and a WebRTC request goes to Google's STUN server to discover your network addresses. Everything else runs locally.</p>
+
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="ad-bait adsbox ad-banner ad-placement pub_300x250 textads" id="ad-bait">&nbsp;</div>
+
+  <script>
+    'use strict';
+
+    const report = {};
+    const grid = document.getElementById('grid');
+    const hero = document.getElementById('hero');
+
+    // ---------- helpers ----------
+
+    function fmt(v) {
+      if (v === undefined || v === null || v === '' || Number.isNaN(v)) return 'n/a';
+      if (typeof v === 'boolean') return v ? 'yes' : 'no';
+      if (Array.isArray(v)) return v.length ? v.join(', ') : 'none';
+      if (typeof v === 'object') return JSON.stringify(v);
+      return String(v);
+    }
+
+    function withTimeout(promise, ms) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timed out')), ms))
+      ]);
+    }
+
+    function safe(fn) {
+      try { return fn(); } catch (e) { return 'blocked'; }
+    }
+
+    // cyrb53: fast non-crypto 53-bit hash
+    function hash(str) {
+      let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+      for (let i = 0; i < str.length; i++) {
+        const ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, '0');
+    }
+
+    function bytes(n) {
+      if (n == null) return null;
+      const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+      let i = 0;
+      while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+      return `${n.toFixed(i ? 1 : 0)} ${units[i]}`;
+    }
+
+    function mq(query) {
+      return window.matchMedia(query).matches;
+    }
+
+    function firstMatch(feature, values) {
+      return values.find(v => mq(`(${feature}: ${v})`)) || null;
+    }
+
+    function setHero(label, value, key) {
+      let el = hero.querySelector(`[data-label="${label}"]`);
+      if (!el) {
+        el = document.createElement('div');
+        el.className = 'stat' + (key ? ' key' : '');
+        el.dataset.label = label;
+        el.innerHTML = '<div class="label"></div><div class="value"></div>';
+        el.querySelector('.label').textContent = label;
+        hero.appendChild(el);
+      }
+      el.querySelector('.value').textContent = value instanceof Promise ? '…' : fmt(value);
+      if (value instanceof Promise) {
+        value.then(v => { el.querySelector('.value').textContent = fmt(v); },
+                   () => { el.querySelector('.value').textContent = 'n/a'; });
+      }
+    }
+
+    function section(title, desc) {
+      const card = document.createElement('section');
+      card.className = 'card';
+      const h2 = document.createElement('h2');
+      h2.textContent = title;
+      card.appendChild(h2);
+      if (desc) {
+        const p = document.createElement('p');
+        p.className = 'desc';
+        p.textContent = desc;
+        card.appendChild(p);
+      }
+      const dl = document.createElement('dl');
+      card.appendChild(dl);
+      grid.appendChild(card);
+      const data = report[title] = {};
+
+      function row(label, full) {
+        const dt = document.createElement('dt');
+        const dd = document.createElement('dd');
+        dt.textContent = label;
+        if (full) { dt.classList.add('full'); dd.classList.add('full'); }
+        dl.append(dt, dd);
+        return dd;
+      }
+
+      return {
+        // value may be a plain value, a Promise, or a DOM node
+        add(label, value) {
+          const dd = row(label);
+          const set = v => {
+            if (v instanceof Node) { dd.replaceChildren(v); return; }
+            const text = fmt(v);
+            dd.textContent = text;
+            dd.classList.toggle('na', text === 'n/a' || text === 'none');
+            data[label] = v;
+          };
+          if (value instanceof Promise) {
+            dd.textContent = 'detecting…';
+            dd.classList.add('pending');
+            value.then(set, e => set(`error: ${e.message}`))
+                 .finally(() => dd.classList.remove('pending'));
+          } else {
+            set(value);
+          }
+          return set;
+        },
+        // items: { name: boolean } rendered as on/off chips
+        chips(label, items) {
+          const dd = row(label, true);
+          const wrap = document.createElement('div');
+          wrap.className = 'chips';
+          dd.appendChild(wrap);
+          const render = obj => {
+            wrap.replaceChildren();
+            for (const [name, on] of Object.entries(obj)) {
+              const chip = document.createElement('span');
+              chip.className = 'chip' + (on ? ' on' : '');
+              chip.textContent = typeof on === 'string' ? `${name}: ${on}` : name;
+              if (typeof on === 'string') chip.classList.toggle('on', on === 'granted');
+              wrap.appendChild(chip);
+            }
+            data[label] = obj;
+          };
+          if (items instanceof Promise) {
+            dd.textContent = 'detecting…';
+            dd.classList.add('pending');
+            items.then(obj => { dd.classList.remove('pending'); dd.textContent = ''; dd.appendChild(wrap); render(obj); });
+          } else {
+            render(items);
+          }
+        },
+        // live-updating row, returns a setter
+        live(label) {
+          const dd = row(label);
+          return v => { dd.textContent = fmt(v); data[label] = v; };
+        }
+      };
+    }
+
+    // ---------- parsers & probes ----------
+
+    function parseUA(ua) {
+      const browsers = [
+        ['Edge', /Edg(?:e|A|iOS)?\/([\d.]+)/],
+        ['Opera', /(?:OPR|Opera)\/([\d.]+)/],
+        ['Samsung Internet', /SamsungBrowser\/([\d.]+)/],
+        ['Vivaldi', /Vivaldi\/([\d.]+)/],
+        ['Firefox', /(?:Firefox|FxiOS)\/([\d.]+)/],
+        ['Chrome', /(?:Chrome|CriOS)\/([\d.]+)/],
+        ['Safari', /Version\/([\d.]+).*Safari/]
+      ];
+      let browser = 'Unknown', version = '';
+      for (const [name, re] of browsers) {
+        const m = ua.match(re);
+        if (m) { browser = name; version = m[1]; break; }
+      }
+
+      let os = 'Unknown';
+      let m;
+      if ((m = ua.match(/iPhone OS ([\d_]+)/)) || (m = ua.match(/iPad.*OS ([\d_]+)/))) os = `iOS ${m[1].replace(/_/g, '.')}`;
+      else if ((m = ua.match(/Android ([\d.]+)/))) os = `Android ${m[1]}`;
+      else if ((m = ua.match(/Windows NT ([\d.]+)/))) os = `Windows ${{ '10.0': '10/11', '6.3': '8.1', '6.2': '8', '6.1': '7' }[m[1]] || m[1]}`;
+      else if ((m = ua.match(/Mac OS X ([\d_]+)/))) os = `macOS ${m[1].replace(/_/g, '.')}`;
+      else if (/CrOS/.test(ua)) os = 'ChromeOS';
+      else if (/Linux/.test(ua)) os = 'Linux';
+
+      let engine = 'Unknown';
+      if (/Gecko\/\d/.test(ua) && /Firefox/.test(ua)) engine = 'Gecko';
+      else if (/AppleWebKit/.test(ua) && /Chrome|CriOS/.test(ua)) engine = 'Blink';
+      else if (/AppleWebKit/.test(ua)) engine = 'WebKit';
+
+      return { browser, version, os, engine };
+    }
+
+    function webrtcIPs() {
+      return new Promise(resolve => {
+        const PC = window.RTCPeerConnection || window.webkitRTCPeerConnection;
+        if (!PC) return resolve(null);
+        const found = new Set();
+        let pc;
+        const finish = () => { try { pc.close(); } catch (e) {} resolve([...found]); };
+        try {
+          pc = new PC({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+          pc.createDataChannel('eye-spy');
+          pc.onicecandidate = e => {
+            if (!e.candidate) return finish();
+            // candidate:<foundation> <component> <protocol> <priority> <address> <port> typ <type>
+            const parts = e.candidate.candidate.split(' ');
+            if (parts[4]) found.add(`${parts[4]} (${parts[7]})`);
+          };
+          pc.createOffer().then(o => pc.setLocalDescription(o)).catch(finish);
+          setTimeout(finish, 5000);
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    }
+
+    function webglInfo() {
+      const c = document.createElement('canvas');
+      const gl = c.getContext('webgl2') || c.getContext('webgl') || c.getContext('experimental-webgl');
+      if (!gl) return null;
+      const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+      const exts = gl.getSupportedExtensions() || [];
+      return {
+        version: gl.getParameter(gl.VERSION),
+        glsl: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
+        vendor: dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
+        renderer: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER),
+        maxTexture: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+        maxViewport: Array.from(gl.getParameter(gl.MAX_VIEWPORT_DIMS)).join(' × '),
+        maxRenderbuffer: gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
+        maxAttribs: gl.getParameter(gl.MAX_VERTEX_ATTRIBS),
+        antialias: gl.getContextAttributes()?.antialias,
+        extensions: exts.length,
+        extHash: hash(exts.join(','))
+      };
+    }
+
+    async function webgpuInfo() {
+      if (!navigator.gpu) return null;
+      const adapter = await navigator.gpu.requestAdapter();
+      if (!adapter) return null;
+      const info = adapter.info || (adapter.requestAdapterInfo ? await adapter.requestAdapterInfo() : {});
+      return {
+        vendor: info.vendor,
+        architecture: info.architecture,
+        device: info.device,
+        description: info.description,
+        features: adapter.features.size,
+        maxBuffer: bytes(adapter.limits.maxBufferSize)
+      };
+    }
+
+    function canvasFingerprint() {
+      const c = document.createElement('canvas');
+      c.width = 300;
+      c.height = 70;
+      const x = c.getContext('2d');
+      if (!x) return null;
+      x.textBaseline = 'top';
+      x.font = '14px Arial';
+      x.fillStyle = '#f60';
+      x.fillRect(150, 2, 70, 22);
+      x.fillStyle = '#069';
+      x.fillText('Eye Spy \u{1F441} <canvas> 1.0', 4, 6);
+      x.fillStyle = 'rgba(102, 204, 0, 0.7)';
+      x.font = '18px "Times New Roman"';
+      x.fillText('Cwm fjordbank glyphs vext quiz', 4, 30);
+      x.globalCompositeOperation = 'multiply';
+      [['#f2f', 240, 40], ['#2ff', 260, 40], ['#ff2', 250, 55]].forEach(([color, cx, cy]) => {
+        x.fillStyle = color;
+        x.beginPath();
+        x.arc(cx, cy, 18, 0, Math.PI * 2);
+        x.fill();
+      });
+      const url = c.toDataURL();
+      return { url, hash: hash(url) };
+    }
+
+    async function audioFingerprint() {
+      const Ctx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+      if (!Ctx) return null;
+      const ctx = new Ctx(1, 5000, 44100);
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.value = 10000;
+      const comp = ctx.createDynamicsCompressor();
+      comp.threshold.value = -50;
+      comp.knee.value = 40;
+      comp.ratio.value = 12;
+      comp.attack.value = 0;
+      comp.release.value = 0.25;
+      osc.connect(comp);
+      comp.connect(ctx.destination);
+      osc.start(0);
+      const buf = await ctx.startRendering();
+      const data = buf.getChannelData(0);
+      let sum = 0;
+      for (let i = 4500; i < 5000; i++) sum += Math.abs(data[i]);
+      return sum;
+    }
+
+    function detectFonts() {
+      const candidates = [
+        'Arial', 'Arial Black', 'Arial Narrow', 'Avenir', 'Avenir Next', 'Baskerville', 'Calibri', 'Cambria',
+        'Candara', 'Century Gothic', 'Comic Sans MS', 'Consolas', 'Constantia', 'Corbel', 'Courier New',
+        'DejaVu Sans', 'Didot', 'Droid Sans', 'Franklin Gothic Medium', 'Futura', 'Garamond', 'Geneva',
+        'Georgia', 'Gill Sans', 'Helvetica', 'Helvetica Neue', 'Impact', 'Inter', 'JetBrains Mono',
+        'Liberation Sans', 'Lucida Console', 'Lucida Grande', 'Menlo', 'Monaco', 'Noto Sans', 'Optima',
+        'Palatino', 'Roboto', 'Segoe UI', 'SF Pro Display', 'Source Code Pro', 'Tahoma', 'Times New Roman',
+        'Trebuchet MS', 'Ubuntu', 'Verdana', 'Fira Code', 'Open Sans', 'Lato', 'Montserrat',
+        'Microsoft YaHei', 'MS Gothic', 'PingFang SC', 'Hiragino Sans', 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Wingdings', 'Webdings', 'Bahnschrift', 'Cascadia Code', 'Aptos'
+      ];
+      const bases = ['monospace', 'sans-serif', 'serif'];
+      const span = document.createElement('span');
+      span.style.cssText = 'position:absolute;left:-9999px;top:0;font-size:72px;visibility:hidden;white-space:nowrap';
+      span.textContent = 'mmmmmmmmmmlli1WQ@#é';
+      document.body.appendChild(span);
+      const baseline = {};
+      for (const b of bases) {
+        span.style.fontFamily = b;
+        baseline[b] = [span.offsetWidth, span.offsetHeight];
+      }
+      const found = candidates.filter(font => bases.some(b => {
+        span.style.fontFamily = `"${font}", ${b}`;
+        return span.offsetWidth !== baseline[b][0] || span.offsetHeight !== baseline[b][1];
+      }));
+      span.remove();
+      return found;
+    }
+
+    function getVoices() {
+      if (!window.speechSynthesis) return Promise.resolve(null);
+      const voices = speechSynthesis.getVoices();
+      if (voices.length) return Promise.resolve(voices);
+      return new Promise(resolve => {
+        speechSynthesis.addEventListener('voiceschanged', () => resolve(speechSynthesis.getVoices()), { once: true });
+        setTimeout(() => resolve(speechSynthesis.getVoices()), 2000);
+      });
+    }
+
+    // ---------- collection ----------
+
+    const ua = navigator.userAgent;
+    const parsed = parseUA(ua);
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    const ipLookup = withTimeout(fetch('https://ipapi.co/json/').then(r => r.json()), 8000)
+      .then(d => { if (d.error) throw new Error(d.reason || 'lookup failed'); return d; })
+      .catch(() => withTimeout(fetch('https://api.ipify.org?format=json').then(r => r.json()), 6000));
+
+    const highEntropy = navigator.userAgentData?.getHighEntropyValues
+      ? navigator.userAgentData.getHighEntropyValues(['architecture', 'bitness', 'model', 'platformVersion', 'fullVersionList', 'wow64', 'formFactors']).catch(() => null)
+      : Promise.resolve(null);
+
+    const canvasFP = safe(canvasFingerprint);
+    const audioFP = audioFingerprint().catch(() => null);
+    const gl = safe(webglInfo);
+    const fonts = safe(detectFonts);
+
+    // Hero
+    setHero('Public IP', ipLookup.then(d => d.ip), true);
+    setHero('Location', ipLookup.then(d => d.city ? `${d.city}, ${d.region_code || d.region}, ${d.country_code}` : null));
+    setHero('Browser', `${parsed.browser} ${parsed.version.split('.')[0]}`);
+    setHero('OS', highEntropy.then(he => {
+      if (he?.platformVersion && navigator.userAgentData?.platform === 'Windows') {
+        return parseInt(he.platformVersion) >= 13 ? 'Windows 11' : 'Windows 10';
+      }
+      if (he?.platformVersion && navigator.userAgentData?.platform === 'macOS') return `macOS ${he.platformVersion}`;
+      return parsed.os;
+    }));
+    setHero('Screen', `${screen.width}×${screen.height} @${window.devicePixelRatio}x`);
+
+    // Network
+    const net = section('Network', 'Where you are, according to your IP address and connection.');
+    net.add('Public IP', ipLookup.then(d => d.ip));
+    net.add('ISP / Org', ipLookup.then(d => d.org));
+    net.add('ASN', ipLookup.then(d => d.asn));
+    net.add('City', ipLookup.then(d => d.city));
+    net.add('Region', ipLookup.then(d => d.region));
+    net.add('Country', ipLookup.then(d => d.country_name));
+    net.add('Postal code', ipLookup.then(d => d.postal));
+    net.add('Coordinates', ipLookup.then(d => d.latitude != null ? `${d.latitude}, ${d.longitude}` : null));
+    net.add('IP timezone', ipLookup.then(d => d.timezone));
+    net.add('Timezone mismatch', ipLookup.then(d => d.timezone ? (d.timezone !== tz ? `yes: IP says ${d.timezone}, browser says ${tz} (VPN/proxy?)` : 'no') : null));
+    net.add('WebRTC addresses', webrtcIPs());
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    net.add('Connection type', conn?.type);
+    net.add('Effective type', conn?.effectiveType);
+    net.add('Downlink', conn?.downlink != null ? `${conn.downlink} Mbps` : null);
+    net.add('Round-trip time', conn?.rtt != null ? `${conn.rtt} ms` : null);
+    net.add('Data saver', conn?.saveData);
+    net.add('Online', navigator.onLine);
+
+    // Browser
+    const br = section('Browser', 'Identity details your browser sends with every request.');
+    br.add('User agent', ua);
+    br.add('Browser', `${parsed.browser} ${parsed.version}`);
+    br.add('Engine', parsed.engine);
+    br.add('Vendor', navigator.vendor);
+    br.add('Client hint brands', navigator.userAgentData?.brands?.map(b => `${b.brand} ${b.version}`));
+    br.add('Full version list', highEntropy.then(he => he?.fullVersionList?.map(b => `${b.brand} ${b.version}`)));
+    br.add('Mobile', navigator.userAgentData ? navigator.userAgentData.mobile : /Mobi/.test(ua));
+    br.add('Languages', navigator.languages);
+    br.add('Cookies enabled', navigator.cookieEnabled);
+    br.add('Do Not Track', navigator.doNotTrack ?? window.doNotTrack);
+    br.add('Global Privacy Control', navigator.globalPrivacyControl);
+    br.add('PDF viewer', navigator.pdfViewerEnabled);
+    br.add('Automated (webdriver)', navigator.webdriver);
+    br.add('Plugins', Array.from(navigator.plugins || []).map(p => p.name));
+    br.add('Ad blocker', new Promise(resolve => setTimeout(() => {
+      const bait = document.getElementById('ad-bait');
+      const s = getComputedStyle(bait);
+      resolve(bait.offsetHeight === 0 || s.display === 'none' || s.visibility === 'hidden' ? 'likely' : 'not detected');
+    }, 300)));
+    br.add('Referrer', document.referrer);
+    br.add('History length', history.length);
+    br.add('In iframe', window.self !== window.top);
+    br.add('Secure context', window.isSecureContext);
+    br.add('Cross-origin isolated', window.crossOriginIsolated);
+
+    // System
+    const sys = section('System', 'Your hardware and operating system.');
+    sys.add('OS (from UA)', parsed.os);
+    sys.add('Platform', navigator.userAgentData?.platform || navigator.platform);
+    sys.add('Platform version', highEntropy.then(he => he?.platformVersion));
+    sys.add('Architecture', highEntropy.then(he => he?.architecture ? `${he.architecture} ${he.bitness || ''}-bit`.trim() : null));
+    sys.add('Device model', highEntropy.then(he => he?.model));
+    sys.add('Form factors', highEntropy.then(he => he?.formFactors));
+    sys.add('CPU threads', navigator.hardwareConcurrency);
+    sys.add('Device memory', navigator.deviceMemory ? `≥ ${navigator.deviceMemory} GB` : null);
+    sys.add('JS heap limit', performance.memory ? bytes(performance.memory.jsHeapSizeLimit) : null);
+    sys.add('Touch points', navigator.maxTouchPoints);
+    const battery = navigator.getBattery ? navigator.getBattery().catch(() => null) : Promise.resolve(null);
+    sys.add('Battery level', battery.then(b => b ? `${Math.round(b.level * 100)}%` : null));
+    sys.add('Charging', battery.then(b => b ? b.charging : null));
+    sys.add('Time to full / empty', battery.then(b => {
+      if (!b) return null;
+      const secs = b.charging ? b.chargingTime : b.dischargingTime;
+      return Number.isFinite(secs) ? `${Math.round(secs / 60)} min` : 'unknown';
+    }));
+
+    // Locale & time
+    const loc = section('Locale & Time', 'Your region settings, which often narrow down where you are.');
+    const intl = Intl.DateTimeFormat().resolvedOptions();
+    loc.add('Timezone', tz);
+    loc.add('UTC offset', (() => {
+      const off = -new Date().getTimezoneOffset();
+      const sign = off >= 0 ? '+' : '-';
+      return `UTC${sign}${String(Math.floor(Math.abs(off) / 60)).padStart(2, '0')}:${String(Math.abs(off) % 60).padStart(2, '0')}`;
+    })());
+    loc.add('Local time', new Date().toString());
+    loc.add('Locale', intl.locale);
+    loc.add('Calendar', intl.calendar);
+    loc.add('Numbering system', intl.numberingSystem);
+    loc.add('Number format', new Intl.NumberFormat().format(1234567.891));
+    loc.add('Date format', new Date(2001, 11, 31).toLocaleDateString());
+    loc.add('Hour cycle', new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions().hourCycle);
+    loc.add('Currency hint', (() => { try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(1); } catch (e) { return null; } })());
+
+    // Display
+    const disp = section('Display', 'Your screen, window, and visual preferences.');
+    disp.add('Screen', `${screen.width} × ${screen.height}`);
+    disp.add('Available', `${screen.availWidth} × ${screen.availHeight}`);
+    disp.add('Pixel ratio', window.devicePixelRatio);
+    disp.add('Color depth', `${screen.colorDepth}-bit`);
+    disp.add('Orientation', screen.orientation?.type);
+    const winSize = disp.live('Window (inner)');
+    const winOuter = disp.live('Window (outer)');
+    const winPos = disp.live('Window position');
+    disp.add('Multiple monitors', screen.isExtended);
+    disp.add('Color scheme', firstMatch('prefers-color-scheme', ['dark', 'light']));
+    disp.add('Reduced motion', mq('(prefers-reduced-motion: reduce)'));
+    disp.add('Reduced transparency', mq('(prefers-reduced-transparency: reduce)'));
+    disp.add('Contrast', firstMatch('prefers-contrast', ['more', 'less', 'custom', 'no-preference']));
+    disp.add('Forced colors', mq('(forced-colors: active)'));
+    disp.add('Inverted colors', mq('(inverted-colors: inverted)'));
+    disp.add('Color gamut', firstMatch('color-gamut', ['rec2020', 'p3', 'srgb']));
+    disp.add('HDR', mq('(dynamic-range: high)'));
+    disp.add('Pointer', firstMatch('pointer', ['fine', 'coarse', 'none']));
+    disp.add('Hover', mq('(hover: hover)'));
+    disp.add('Display mode', firstMatch('display-mode', ['fullscreen', 'standalone', 'minimal-ui', 'browser']));
+
+    // Graphics
+    const gfx = section('Graphics', 'Your GPU, which is one of the strongest fingerprinting signals.');
+    gfx.add('GPU vendor', gl?.vendor);
+    gfx.add('GPU renderer', gl?.renderer);
+    gfx.add('WebGL version', gl?.version);
+    gfx.add('GLSL version', gl?.glsl);
+    gfx.add('Max texture', gl?.maxTexture);
+    gfx.add('Max viewport', gl?.maxViewport);
+    gfx.add('Max renderbuffer', gl?.maxRenderbuffer);
+    gfx.add('Max vertex attribs', gl?.maxAttribs);
+    gfx.add('Antialiasing', gl?.antialias);
+    gfx.add('WebGL extensions', gl ? `${gl.extensions} (hash ${gl.extHash})` : null);
+    const gpu = withTimeout(webgpuInfo(), 4000).catch(() => null);
+    gfx.add('WebGPU adapter', gpu.then(g => g ? [g.vendor, g.architecture, g.device, g.description].filter(Boolean).join(' / ') || 'available (details hidden)' : null));
+    gfx.add('WebGPU features', gpu.then(g => g?.features));
+    gfx.add('WebGPU max buffer', gpu.then(g => g?.maxBuffer));
+
+    // Fingerprints
+    const fp = section('Fingerprints', 'Tiny rendering differences between machines. Sites hash these to recognize you without cookies.');
+    fp.add('Canvas hash', canvasFP?.hash);
+    if (canvasFP?.url) {
+      const img = new Image();
+      img.src = canvasFP.url;
+      img.alt = 'Canvas fingerprint render';
+      fp.add('Canvas render', img);
+    }
+    fp.add('Audio value', audioFP.then(v => v == null ? null : v.toFixed(10)));
+    fp.add('Audio hash', audioFP.then(v => v == null ? null : hash(String(v))));
+    fp.add(`Fonts detected (${Array.isArray(fonts) ? fonts.length : 0})`, fonts);
+    const fingerprint = Promise.all([audioFP, highEntropy]).then(([audio]) => hash(JSON.stringify([
+      ua, navigator.languages, tz, screen.width, screen.height, screen.colorDepth, window.devicePixelRatio,
+      navigator.hardwareConcurrency, navigator.deviceMemory, navigator.platform, navigator.maxTouchPoints,
+      gl?.vendor, gl?.renderer, gl?.extHash, canvasFP?.hash, audio, fonts
+    ])));
+    fp.add('Combined fingerprint', fingerprint);
+    setHero('Fingerprint', fingerprint, true);
+
+    // Media
+    const media = section('Media', 'Devices, voices, and codecs. Voice lists reveal installed OS language packs.');
+    const devices = navigator.mediaDevices?.enumerateDevices ? navigator.mediaDevices.enumerateDevices().catch(() => null) : Promise.resolve(null);
+    const countKind = kind => devices.then(d => d ? d.filter(x => x.kind === kind).length : null);
+    media.add('Cameras', countKind('videoinput'));
+    media.add('Microphones', countKind('audioinput'));
+    media.add('Speakers', countKind('audiooutput'));
+    const voices = getVoices();
+    media.add('Speech voices', voices.then(v => v ? v.length : null));
+    media.add('Voice languages', voices.then(v => v ? [...new Set(v.map(x => x.lang))].sort() : null));
+    const audioCtx = safe(() => {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      const c = new Ctx();
+      const info = { rate: c.sampleRate, latency: c.baseLatency, channels: c.destination.maxChannelCount };
+      c.close();
+      return info;
+    });
+    media.add('Audio sample rate', audioCtx?.rate ? `${audioCtx.rate} Hz` : null);
+    media.add('Audio base latency', audioCtx?.latency != null ? `${(audioCtx.latency * 1000).toFixed(1)} ms` : null);
+    media.add('Max audio channels', audioCtx?.channels);
+    const v = document.createElement('video');
+    const a = document.createElement('audio');
+    const codec = (el, type) => el.canPlayType(type) !== '';
+    media.chips('Codecs', {
+      'H.264': codec(v, 'video/mp4; codecs="avc1.42E01E"'),
+      'HEVC': codec(v, 'video/mp4; codecs="hvc1.1.6.L93.B0"'),
+      'VP8': codec(v, 'video/webm; codecs="vp8"'),
+      'VP9': codec(v, 'video/webm; codecs="vp9"'),
+      'AV1': codec(v, 'video/mp4; codecs="av01.0.05M.08"'),
+      'AAC': codec(a, 'audio/mp4; codecs="mp4a.40.2"'),
+      'MP3': codec(a, 'audio/mpeg'),
+      'Opus': codec(a, 'audio/ogg; codecs="opus"'),
+      'FLAC': codec(a, 'audio/flac'),
+      'WAV': codec(a, 'audio/wav')
+    });
+
+    // Storage
+    const store = section('Storage', 'Places a site could stash an identifier.');
+    store.add('localStorage', safe(() => { localStorage.setItem('__es', '1'); localStorage.removeItem('__es'); return true; }));
+    store.add('sessionStorage', safe(() => { sessionStorage.setItem('__es', '1'); sessionStorage.removeItem('__es'); return true; }));
+    store.add('IndexedDB', !!window.indexedDB);
+    store.add('Cache API', 'caches' in window);
+    store.add('Service workers', 'serviceWorker' in navigator);
+    store.add('Cookies on this page', document.cookie ? document.cookie.split(';').length : 0);
+    const est = navigator.storage?.estimate ? navigator.storage.estimate().catch(() => null) : Promise.resolve(null);
+    store.add('Storage quota', est.then(e => e ? bytes(e.quota) : null));
+    store.add('Storage used', est.then(e => e ? bytes(e.usage) : null));
+    store.add('Persistent storage', navigator.storage?.persisted ? navigator.storage.persisted() : null);
+
+    // Permissions
+    const perms = section('Permissions', 'Sites can check what you already allowed without asking.');
+    perms.chips('Status', (async () => {
+      const names = ['geolocation', 'notifications', 'camera', 'microphone', 'clipboard-read', 'clipboard-write',
+        'persistent-storage', 'midi', 'accelerometer', 'gyroscope', 'magnetometer', 'background-sync',
+        'screen-wake-lock', 'local-fonts', 'idle-detection', 'storage-access', 'window-management', 'push'];
+      const out = {};
+      if (!navigator.permissions?.query) return { 'Permissions API': 'unsupported' };
+      await Promise.all(names.map(async name => {
+        try {
+          const desc = name === 'push' ? { name, userVisibleOnly: true } : { name };
+          out[name] = (await navigator.permissions.query(desc)).state;
+        } catch (e) {
+          out[name] = 'unsupported';
+        }
+      }));
+      return Object.fromEntries(names.map(n => [n, out[n]]));
+    })());
+
+    // APIs
+    const apis = section('Capabilities', 'Which browser APIs exist. The exact combination narrows down browser and version.');
+    apis.chips('Supported', {
+      'WebAssembly': typeof WebAssembly === 'object',
+      'SharedArrayBuffer': typeof SharedArrayBuffer === 'function',
+      'WebGPU': !!navigator.gpu,
+      'WebXR': !!navigator.xr,
+      'WebRTC': !!window.RTCPeerConnection,
+      'WebTransport': typeof WebTransport === 'function',
+      'WebSocket': typeof WebSocket === 'function',
+      'Bluetooth': !!navigator.bluetooth,
+      'USB': !!navigator.usb,
+      'Serial': !!navigator.serial,
+      'HID': !!navigator.hid,
+      'NFC': 'NDEFReader' in window,
+      'MIDI': !!navigator.requestMIDIAccess,
+      'Gamepad': !!navigator.getGamepads,
+      'Geolocation': !!navigator.geolocation,
+      'Notifications': 'Notification' in window,
+      'Push': 'PushManager' in window,
+      'Payment Request': 'PaymentRequest' in window,
+      'WebAuthn': 'PublicKeyCredential' in window,
+      'Web Share': !!navigator.share,
+      'Clipboard': !!navigator.clipboard,
+      'Vibration': !!navigator.vibrate,
+      'Wake Lock': !!navigator.wakeLock,
+      'Idle Detection': 'IdleDetector' in window,
+      'File System Access': 'showOpenFilePicker' in window,
+      'EyeDropper': 'EyeDropper' in window,
+      'Barcode Detector': 'BarcodeDetector' in window,
+      'Contact Picker': !!navigator.contacts,
+      'Web Locks': !!navigator.locks,
+      'Compression Streams': typeof CompressionStream === 'function',
+      'View Transitions': !!document.startViewTransition,
+      'Speech Recognition': 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window,
+      'Local Font Access': 'queryLocalFonts' in window,
+      'Device Orientation': 'DeviceOrientationEvent' in window,
+      'Pointer Lock': 'pointerLockElement' in document,
+      'Picture-in-Picture': 'pictureInPictureEnabled' in document
+    });
+    apis.add('Biometric authenticator', window.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable
+      ? PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(() => null)
+      : null);
+
+    // Performance
+    const perf = section('Performance', 'Timing data that hints at device speed and network distance.');
+    const nav = performance.getEntriesByType('navigation')[0];
+    perf.add('Page load', nav ? `${Math.round(nav.loadEventEnd || performance.now())} ms` : null);
+    perf.add('DNS lookup', nav ? `${Math.round(nav.domainLookupEnd - nav.domainLookupStart)} ms` : null);
+    perf.add('TCP + TLS', nav ? `${Math.round(nav.connectEnd - nav.connectStart)} ms` : null);
+    perf.add('Time to first byte', nav ? `${Math.round(nav.responseStart - nav.requestStart)} ms` : null);
+    perf.add('Protocol', nav?.nextHopProtocol);
+    perf.add('Timer precision', (() => {
+      let min = Infinity, last = performance.now();
+      for (let i = 0; i < 1000; i++) {
+        const t = performance.now();
+        if (t > last) { min = Math.min(min, t - last); last = t; }
+      }
+      return Number.isFinite(min) ? `${(min * 1000).toFixed(1)} µs` : null;
+    })());
+    perf.add('Math quirks', hash([Math.tan(-1e300), Math.acosh(1e300), Math.expm1(1), Math.sinh(1), Math.cbrt(100)].join()));
+
+    // Live behavior
+    const live = section('Live Activity', 'Everything you do on the page is observable in real time.');
+    const mouse = live.live('Mouse position');
+    const click = live.live('Last click');
+    const scroll = live.live('Scroll position');
+    const keys = live.live('Keys pressed');
+    const vis = live.live('Tab visible');
+    const focus = live.live('Window focused');
+    const hidden = live.live('Times you left');
+    const onPage = live.live('Time on page');
+    const idle = live.live('Idle for');
+
+    let keyCount = 0, leftCount = 0, lastActive = Date.now();
+    const start = Date.now();
+    const touch = () => { lastActive = Date.now(); };
+
+    mouse('move your mouse');
+    click('none yet');
+    keys(0);
+    hidden(0);
+
+    window.addEventListener('mousemove', e => { mouse(`${e.clientX}, ${e.clientY}`); touch(); }, { passive: true });
+    window.addEventListener('pointerdown', e => { click(`${e.clientX}, ${e.clientY} on <${e.target.tagName.toLowerCase()}> (${e.pointerType})`); touch(); });
+    window.addEventListener('scroll', () => { scroll(`${Math.round(scrollY)} px`); touch(); }, { passive: true });
+    window.addEventListener('keydown', () => { keys(++keyCount); touch(); });
+    document.addEventListener('visibilitychange', () => {
+      vis(document.visibilityState === 'visible');
+      if (document.hidden) hidden(++leftCount);
+    });
+    window.addEventListener('focus', () => focus(true));
+    window.addEventListener('blur', () => focus(false));
+
+    function updateWindow() {
+      winSize(`${innerWidth} × ${innerHeight}`);
+      winOuter(`${outerWidth} × ${outerHeight}`);
+      winPos(`${screenX}, ${screenY}`);
+    }
+    window.addEventListener('resize', updateWindow);
+
+    function tick() {
+      onPage(`${Math.round((Date.now() - start) / 1000)} s`);
+      idle(`${Math.round((Date.now() - lastActive) / 1000)} s`);
+      winPos(`${screenX}, ${screenY}`);
+    }
+
+    scroll(`${Math.round(scrollY)} px`);
+    vis(document.visibilityState === 'visible');
+    focus(document.hasFocus());
+    updateWindow();
+    tick();
+    setInterval(tick, 1000);
+
+    // ---------- export ----------
+
+    document.getElementById('copy').addEventListener('click', async e => {
+      const btn = e.currentTarget;
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(report, null, 2));
+        btn.textContent = 'Copied';
+      } catch (err) {
+        btn.textContent = 'Copy failed';
+      }
+      setTimeout(() => { btn.textContent = 'Copy JSON'; }, 1500);
+    });
+
+    document.getElementById('download').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'eye-spy-report.json';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+  </script>
+</body>
+</html>
