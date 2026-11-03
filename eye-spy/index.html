@@ -75,20 +75,6 @@
       margin-top: 4px;
     }
 
-    .actions { display: flex; gap: 8px; }
-
-    button {
-      font: inherit;
-      font-size: 14px;
-      padding: 8px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      cursor: pointer;
-    }
-
-    button:hover { border-color: var(--accent); }
 
     .hero {
       display: grid;
@@ -203,6 +189,16 @@
       text-decoration: none;
     }
 
+    .swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      margin-right: 6px;
+      vertical-align: -1px;
+    }
+
     dd img {
       max-width: 100%;
       background: #fff;
@@ -230,15 +226,11 @@
         <h1>Eye <span>Spy</span></h1>
         <p class="lede">Everything your browser hands over to any website, no permission prompts needed. Each value below came from a script on this page.</p>
       </div>
-      <div class="actions">
-        <button id="copy">Copy JSON</button>
-        <button id="download">Download</button>
-      </div>
     </header>
 
     <div class="hero" id="hero"></div>
 
-    <p class="notice">This page stores nothing and has no backend. Two lookups go out: your IP is sent to <strong>ipapi.co</strong> for geolocation, and a WebRTC request goes to Google's STUN server to discover your network addresses. Everything else runs locally.</p>
+    <p class="notice">This page has no backend. The only thing it stores is a visit counter in your browser's local storage, to show how sites recognize you on return. A few lookups go out: your IP is sent to <strong>ipapi.co</strong> for geolocation and <strong>ipify.org</strong> for your IPv6 address, your request headers are echoed back by <strong>httpbin.org</strong>, and a WebRTC request goes to Google's STUN server to discover your network addresses. Everything else runs locally.</p>
 
     <div class="grid" id="grid"></div>
   </div>
@@ -248,7 +240,6 @@
   <script>
     'use strict';
 
-    const report = {};
     const grid = document.getElementById('grid');
     const hero = document.getElementById('hero');
 
@@ -334,7 +325,6 @@
       const dl = document.createElement('dl');
       card.appendChild(dl);
       grid.appendChild(card);
-      const data = report[title] = {};
 
       function row(label, full) {
         const dt = document.createElement('dt');
@@ -354,7 +344,6 @@
             const text = fmt(v);
             dd.textContent = text;
             dd.classList.toggle('na', text === 'n/a' || text === 'none');
-            data[label] = v;
           };
           if (value instanceof Promise) {
             dd.textContent = 'detecting…';
@@ -381,7 +370,6 @@
               if (typeof on === 'string') chip.classList.toggle('on', on === 'granted');
               wrap.appendChild(chip);
             }
-            data[label] = obj;
           };
           if (items instanceof Promise) {
             dd.textContent = 'detecting…';
@@ -394,7 +382,7 @@
         // live-updating row, returns a setter
         live(label) {
           const dd = row(label);
-          return v => { dd.textContent = fmt(v); data[label] = v; };
+          return v => { dd.textContent = fmt(v); };
         }
       };
     }
@@ -583,6 +571,162 @@
       });
     }
 
+    // Resolves a CSS system color keyword (e.g. AccentColor) to rgb()
+    function systemColor(keyword) {
+      if (!CSS.supports('color', keyword)) return null;
+      const el = document.createElement('div');
+      el.style.color = keyword;
+      document.body.appendChild(el);
+      const color = getComputedStyle(el).color;
+      el.remove();
+      return color;
+    }
+
+    function swatch(color) {
+      if (!color) return null;
+      const wrap = document.createElement('span');
+      const chip = document.createElement('span');
+      chip.className = 'swatch';
+      chip.style.background = color;
+      wrap.append(chip, color);
+      return wrap;
+    }
+
+    async function keyboardLayout() {
+      if (!navigator.keyboard?.getLayoutMap) return null;
+      const map = await navigator.keyboard.getLayoutMap();
+      const row = ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY'].map(k => map.get(k) || '?').join('');
+      const name = {
+        qwerty: 'QWERTY', azerty: 'AZERTY', qwertz: 'QWERTZ', "',.pyf": 'Dvorak', qwfpgj: 'Colemak'
+      }[row.toLowerCase()];
+      return name ? `${name} (${row})` : `custom / non-Latin (${row})`;
+    }
+
+    function refreshRate() {
+      return new Promise(resolve => {
+        const deltas = [];
+        let last = performance.now();
+        const frame = t => {
+          deltas.push(t - last);
+          last = t;
+          if (deltas.length < 60) return requestAnimationFrame(frame);
+          deltas.sort((a, b) => a - b);
+          const hz = 1000 / deltas[Math.floor(deltas.length / 2)];
+          const common = [30, 48, 50, 60, 75, 90, 100, 120, 144, 165, 175, 240, 360];
+          resolve(common.reduce((best, c) => Math.abs(c - hz) < Math.abs(best - hz) ? c : best));
+        };
+        requestAnimationFrame(frame);
+        setTimeout(() => resolve(null), 5000);
+      });
+    }
+
+    // Newest emoji release the system can draw, which tracks OS version
+    function emojiSupport() {
+      const releases = [
+        ['17.0 (2025)', '\u{1FAEA}'], ['16.0 (2024)', '\u{1FAE9}'], ['15.0 (2022)', '\u{1FAE8}'],
+        ['14.0 (2021)', '\u{1FAE0}'], ['13.0 (2020)', '\u{1F972}'], ['12.0 (2019)', '\u{1F971}'],
+        ['11.0 (2018)', '\u{1F970}']
+      ];
+      const c = document.createElement('canvas');
+      c.width = c.height = 32;
+      const x = c.getContext('2d', { willReadFrequently: true });
+      if (!x) return null;
+      x.font = '24px sans-serif';
+      x.textBaseline = 'top';
+      // Unsupported emoji fall back to a monochrome box, so look for color
+      const isColor = ch => {
+        x.clearRect(0, 0, 32, 32);
+        x.fillStyle = '#000';
+        x.fillText(ch, 0, 0);
+        const d = x.getImageData(0, 0, 32, 32).data;
+        for (let i = 0; i < d.length; i += 4) {
+          if (d[i + 3] && Math.max(d[i], d[i + 1], d[i + 2]) - Math.min(d[i], d[i + 1], d[i + 2]) > 40) return true;
+        }
+        return false;
+      };
+      const hit = releases.find(([, ch]) => isColor(ch));
+      return hit ? `Emoji ${hit[0]}` : 'older than Emoji 11.0';
+    }
+
+    function scrollbarWidth() {
+      const el = document.createElement('div');
+      el.style.cssText = 'position:absolute;top:-9999px;width:100px;height:100px;overflow:scroll';
+      document.body.appendChild(el);
+      const w = el.offsetWidth - el.clientWidth;
+      el.remove();
+      return w;
+    }
+
+    // Sub-pixel layout measurements differ by browser, OS, fonts and zoom
+    function domRectFingerprint() {
+      const box = document.createElement('div');
+      box.style.cssText = 'position:absolute;left:-9999px;top:0;font-size:13.37px';
+      box.innerHTML = '<span style="transform:rotate(13.7deg) scale(1.13)">Eye Spy</span>'
+        + '<span style="letter-spacing:0.123em;font-family:serif">Wq@ \u{1F441}</span>'
+        + '<span style="transform:skew(7.3deg);font-family:monospace">0O1l|</span>'
+        + '<span style="font-style:italic;word-spacing:3.3px">fi fl ffi</span>';
+      document.body.appendChild(box);
+      const values = Array.from(box.children).flatMap(el => {
+        const r = el.getBoundingClientRect();
+        return [r.x, r.y, r.width, r.height];
+      });
+      box.remove();
+      return hash(values.join(','));
+    }
+
+    function cpuBenchmark() {
+      const t0 = performance.now();
+      let x = 0;
+      for (let i = 0; i < 5e6; i++) x += Math.sqrt(i) * Math.sin(i);
+      const ms = performance.now() - t0;
+      return x !== 0 && ms > 0 ? Math.round(5e6 / ms / 1000) : null;
+    }
+
+    // Chrome caps quota in private windows; Firefox and Safari refuse OPFS there
+    async function privateWindow() {
+      if (performance.memory && navigator.storage?.estimate) {
+        const { quota } = await navigator.storage.estimate();
+        return quota < performance.memory.jsHeapSizeLimit * 2 ? 'likely' : 'unlikely';
+      }
+      if (navigator.storage?.getDirectory) {
+        try {
+          await navigator.storage.getDirectory();
+          return 'unlikely';
+        } catch (e) {
+          return 'likely';
+        }
+      }
+      return null;
+    }
+
+    function trackVisits() {
+      try {
+        const key = 'eye-spy-visits';
+        const prev = JSON.parse(localStorage.getItem(key) || 'null');
+        const now = Date.now();
+        const visits = { count: (prev?.count || 0) + 1, first: prev?.first || now, last: now };
+        localStorage.setItem(key, JSON.stringify(visits));
+        return { ...visits, previous: prev?.last || null };
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function ago(ms) {
+      const s = Math.round(ms / 1000);
+      if (s < 60) return `${s} s ago`;
+      if (s < 3600) return `${Math.round(s / 60)} min ago`;
+      if (s < 86400) return `${Math.round(s / 3600)} h ago`;
+      return `${Math.round(s / 86400)} days ago`;
+    }
+
+    function stats(arr) {
+      if (!arr.length) return { mean: 0, cv: 0 };
+      const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+      const sd = Math.sqrt(arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length);
+      return { mean, cv: mean ? sd / mean : 0 };
+    }
+
     // ---------- collection ----------
 
     const ua = navigator.userAgent;
@@ -635,6 +779,21 @@
     net.add('Round-trip time', conn?.rtt != null ? `${conn.rtt} ms` : null);
     net.add('Data saver', conn?.saveData);
     net.add('Online', navigator.onLine);
+    net.add('IPv6 address', withTimeout(fetch('https://api64.ipify.org?format=json').then(r => r.json()), 6000)
+      .then(d => d.ip.includes(':') ? d.ip : 'none (IPv4 only)'));
+    const hostingRe = /amazon|aws|google|microsoft|azure|digitalocean|linode|akamai|ovh|hetzner|vultr|choopa|m247|datacamp|cloudflare|oracle|leaseweb|contabo|scaleway|mullvad|nord|expressvpn|proton|private internet|surfshark|cyberghost|hosting|datacenter|data center|server/i;
+    net.add('Hosting / VPN network', ipLookup.then(d => d.org ? (hostingRe.test(d.org) ? `likely: ${d.org} is a hosting or VPN provider` : 'no, looks like a consumer ISP') : null));
+
+    // Request headers
+    const hdrs = section('Request Headers', 'Sent with every request your browser makes, echoed back by a server.');
+    withTimeout(fetch('https://httpbin.org/headers').then(r => r.json()), 8000)
+      .then(d => {
+        const entries = Object.entries(d.headers || {}).filter(([k]) => !/^x-amzn/i.test(k));
+        if (!entries.length) throw new Error('no headers returned');
+        entries.sort(([a], [b]) => a.localeCompare(b)).forEach(([k, v]) => hdrs.add(k, v));
+      })
+      .catch(e => hdrs.add('Status', `unavailable: ${e.message}`));
+
 
     // Browser
     const br = section('Browser', 'Identity details your browser sends with every request.');
@@ -675,6 +834,11 @@
     sys.add('Device memory', navigator.deviceMemory ? `≥ ${navigator.deviceMemory} GB` : null);
     sys.add('JS heap limit', performance.memory ? bytes(performance.memory.jsHeapSizeLimit) : null);
     sys.add('Touch points', navigator.maxTouchPoints);
+    sys.add('Keyboard layout', keyboardLayout().catch(() => null));
+    sys.add('CPU speed', new Promise(resolve => setTimeout(() => {
+      const score = cpuBenchmark();
+      resolve(score ? `${score}k ops/ms` : null);
+    }, 1500)));
     const battery = navigator.getBattery ? navigator.getBattery().catch(() => null) : Promise.resolve(null);
     sys.add('Battery level', battery.then(b => b ? `${Math.round(b.level * 100)}%` : null));
     sys.add('Charging', battery.then(b => b ? b.charging : null));
@@ -724,6 +888,12 @@
     disp.add('Pointer', firstMatch('pointer', ['fine', 'coarse', 'none']));
     disp.add('Hover', mq('(hover: hover)'));
     disp.add('Display mode', firstMatch('display-mode', ['fullscreen', 'standalone', 'minimal-ui', 'browser']));
+    disp.add('Refresh rate', refreshRate().then(hz => hz ? `~${hz} Hz` : null));
+    disp.add('OS accent color', swatch(safe(() => systemColor('AccentColor'))));
+    disp.add('Selection color', swatch(safe(() => systemColor('Highlight'))));
+    const sbw = safe(scrollbarWidth);
+    disp.add('Scrollbar width', typeof sbw === 'number' ? `${sbw} px${sbw === 0 ? ' (overlay: macOS, iOS or Android)' : ''}` : null);
+    const devtools = disp.live('DevTools open');
 
     // Graphics
     const gfx = section('Graphics', 'Your GPU, which is one of the strongest fingerprinting signals.');
@@ -754,10 +924,14 @@
     fp.add('Audio value', audioFP.then(v => v == null ? null : v.toFixed(10)));
     fp.add('Audio hash', audioFP.then(v => v == null ? null : hash(String(v))));
     fp.add(`Fonts detected (${Array.isArray(fonts) ? fonts.length : 0})`, fonts);
+    const rectFP = safe(domRectFingerprint);
+    fp.add('Layout (DOMRect) hash', rectFP);
+    const emoji = safe(emojiSupport);
+    fp.add('Newest emoji drawn', emoji);
     const fingerprint = Promise.all([audioFP, highEntropy]).then(([audio]) => hash(JSON.stringify([
       ua, navigator.languages, tz, screen.width, screen.height, screen.colorDepth, window.devicePixelRatio,
       navigator.hardwareConcurrency, navigator.deviceMemory, navigator.platform, navigator.maxTouchPoints,
-      gl?.vendor, gl?.renderer, gl?.extHash, canvasFP?.hash, audio, fonts
+      gl?.vendor, gl?.renderer, gl?.extHash, canvasFP?.hash, audio, fonts, rectFP, emoji
     ])));
     fp.add('Combined fingerprint', fingerprint);
     setHero('Fingerprint', fingerprint, true);
@@ -811,6 +985,15 @@
     store.add('Storage quota', est.then(e => e ? bytes(e.quota) : null));
     store.add('Storage used', est.then(e => e ? bytes(e.usage) : null));
     store.add('Persistent storage', navigator.storage?.persisted ? navigator.storage.persisted() : null);
+
+    // Tracking
+    const track = section('Tracking', 'This page remembers you with a counter in local storage. Reload or come back later and it knows.');
+    const visits = trackVisits();
+    track.add('Visit number', visits?.count);
+    track.add('First seen', visits ? new Date(visits.first).toLocaleString() : null);
+    track.add('Previous visit', visits ? (visits.previous ? `${new Date(visits.previous).toLocaleString()} (${ago(Date.now() - visits.previous)})` : 'this is your first visit') : null);
+    track.add('Private window', privateWindow().catch(() => null));
+    setHero('Visits', visits?.count);
 
     // Permissions
     const perms = section('Permissions', 'Sites can check what you already allowed without asking.');
@@ -904,6 +1087,82 @@
     const hidden = live.live('Times you left');
     const onPage = live.live('Time on page');
     const idle = live.live('Idle for');
+    const copied = live.live('Last copied text');
+    copied('select and copy something');
+
+    document.addEventListener('copy', () => {
+      const text = String(getSelection()).trim();
+      copied(text.length > 120 ? `${text.slice(0, 120)}…` : text || '(empty)');
+    });
+
+    // Behavior analysis
+    const behave = section('Behavior Analysis', 'How you move and type. Bot detectors and some fraud systems profile this to tell people apart.');
+    const moveSamples = behave.live('Mouse samples');
+    const moveSpeed = behave.live('Average speed');
+    const moveVar = behave.live('Speed variation');
+    const moveStraight = behave.live('Path straightness');
+    const verdict = behave.live('Mouse verdict');
+    const dwell = behave.live('Key hold time');
+    const flight = behave.live('Time between keys');
+    const rhythm = behave.live('Typing rhythm variation');
+
+    moveSamples(0);
+    [moveSpeed, moveVar, moveStraight, flight, rhythm].forEach(set => set('waiting for input'));
+    verdict('move your mouse around');
+    dwell('type anything');
+
+    const speeds = [];
+    let lastMove = null, pathLen = 0, segStart = null, straightness = [];
+    window.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse') return;
+      const p = { x: e.clientX, y: e.clientY, t: e.timeStamp };
+      if (lastMove && p.t > lastMove.t) {
+        const dist = Math.hypot(p.x - lastMove.x, p.y - lastMove.y);
+        speeds.push(dist / (p.t - lastMove.t) * 1000);
+        pathLen += dist;
+      }
+      // A "stroke" ends after 150 ms of stillness; compare path length to straight-line distance
+      if (!segStart || p.t - lastMove.t > 150) {
+        if (segStart && pathLen > 50) straightness.push(Math.hypot(lastMove.x - segStart.x, lastMove.y - segStart.y) / pathLen);
+        segStart = p;
+        pathLen = 0;
+      }
+      lastMove = p;
+    }, { passive: true });
+
+    const keyDown = new Map();
+    const dwells = [], flights = [];
+    let lastKeyDown = null;
+    window.addEventListener('keydown', e => {
+      if (e.repeat) return;
+      if (lastKeyDown !== null && e.timeStamp - lastKeyDown < 2000) flights.push(e.timeStamp - lastKeyDown);
+      lastKeyDown = e.timeStamp;
+      keyDown.set(e.code, e.timeStamp);
+    });
+    window.addEventListener('keyup', e => {
+      const t = keyDown.get(e.code);
+      if (t != null) { dwells.push(e.timeStamp - t); keyDown.delete(e.code); }
+    });
+
+    function analyze() {
+      if (speeds.length) {
+        const s = stats(speeds);
+        const straight = stats(straightness);
+        moveSamples(speeds.length);
+        moveSpeed(`${Math.round(s.mean)} px/s`);
+        moveVar(`${(s.cv * 100).toFixed(0)}%`);
+        moveStraight(straightness.length ? `${(straight.mean * 100).toFixed(0)}% (100% = ruler-straight)` : 'need a few strokes');
+        if (speeds.length < 100) verdict('collecting…');
+        else if (s.cv < 0.15 || straight.mean > 0.99) verdict('robotic: movement is too uniform');
+        else verdict('human: irregular speed and curved paths');
+      }
+      if (dwells.length) {
+        dwell(`${Math.round(stats(dwells).mean)} ms avg`);
+        flight(flights.length ? `${Math.round(stats(flights).mean)} ms avg` : null);
+        rhythm(flights.length > 4 ? `${(stats(flights).cv * 100).toFixed(0)}%` : 'keep typing');
+      }
+    }
+    setInterval(analyze, 500);
 
     let keyCount = 0, leftCount = 0, lastActive = Date.now();
     const start = Date.now();
@@ -929,6 +1188,10 @@
       winSize(`${innerWidth} × ${innerHeight}`);
       winOuter(`${outerWidth} × ${outerHeight}`);
       winPos(`${screenX}, ${screenY}`);
+      // A docked DevTools panel eats a big chunk of the window that toolbars don't explain
+      const gapW = outerWidth - innerWidth;
+      const gapH = outerHeight - innerHeight;
+      devtools(gapW > 160 || gapH > 220 ? `likely (window gap ${gapW} × ${gapH} px)` : 'not detected');
     }
     window.addEventListener('resize', updateWindow);
 
@@ -944,28 +1207,6 @@
     updateWindow();
     tick();
     setInterval(tick, 1000);
-
-    // ---------- export ----------
-
-    document.getElementById('copy').addEventListener('click', async e => {
-      const btn = e.currentTarget;
-      try {
-        await navigator.clipboard.writeText(JSON.stringify(report, null, 2));
-        btn.textContent = 'Copied';
-      } catch (err) {
-        btn.textContent = 'Copy failed';
-      }
-      setTimeout(() => { btn.textContent = 'Copy JSON'; }, 1500);
-    });
-
-    document.getElementById('download').addEventListener('click', () => {
-      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'eye-spy-report.json';
-      link.click();
-      URL.revokeObjectURL(link.href);
-    });
   </script>
 </body>
 </html>
